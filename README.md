@@ -1,0 +1,2 @@
+# AdminStudentDepartment
+ApiServerWithAuthenticationJwtToken
