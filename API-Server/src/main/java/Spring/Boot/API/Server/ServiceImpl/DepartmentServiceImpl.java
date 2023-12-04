@@ -1,5 +1,6 @@
 package Spring.Boot.API.Server.ServiceImpl;
 
+import Spring.Boot.API.Server.CustomException.ResourceNotFoundException;
 import Spring.Boot.API.Server.Entity.Department;
 import Spring.Boot.API.Server.Repository.DepartmentRepository;
 import Spring.Boot.API.Server.Service.DepartmentService;
@@ -34,7 +35,12 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public void deleteDepartment(Long id) throws Exception {
         try {
-            departmentRepository.deleteById(id);
+            Optional<Department> byId = departmentRepository.findById(id);
+            if (!byId.isEmpty()) {
+                departmentRepository.deleteById(id);
+            } else {
+                throw new ResourceNotFoundException("Department with ID " + id + "not found");
+            }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
         }
@@ -60,7 +66,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     public Optional<Department> getDepartmentById(Long id) throws Exception {
         try {
             Optional<Department> findById = departmentRepository.findById(id);
-            return findById;
+            if (!findById.isEmpty()) {
+                return findById;
+            } else {
+                throw new ResourceNotFoundException("Department with ID " + id + "not found");
+            }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
         }
@@ -77,7 +87,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 Department saved = departmentRepository.save(findDepartment);
                 return saved;
             } else {
-                throw new RuntimeException("not found exception");
+                throw new ResourceNotFoundException("Department with ID " + id + "not found");
             }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);

@@ -1,5 +1,6 @@
 package Spring.Boot.API.Server.ServiceImpl;
 
+import Spring.Boot.API.Server.CustomException.ResourceNotFoundException;
 import Spring.Boot.API.Server.Entity.Admin;
 import Spring.Boot.API.Server.Repository.AdminRepository;
 import Spring.Boot.API.Server.Service.AdminService;
@@ -33,7 +34,12 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public void deleteAdmin(Long id) throws Exception {
         try {
-            adminRepository.deleteById(id);
+            Optional<Admin> byId = adminRepository.findById(id);
+            if (!byId.isEmpty()) {
+                adminRepository.deleteById(id);
+            } else {
+                throw new ResourceNotFoundException("Admin with ID " + id + "not found");
+            }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
         }
@@ -59,7 +65,11 @@ public class AdminServiceImpl implements AdminService {
     public Optional<Admin> getAdminById(Long id) throws Exception {
         try {
             Optional<Admin> findById = adminRepository.findById(id);
-            return findById;
+            if (!findById.isEmpty()) {
+                return findById;
+            } else {
+                throw new ResourceNotFoundException("Admin with ID " + id + "not found");
+            }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
         }
@@ -76,7 +86,7 @@ public class AdminServiceImpl implements AdminService {
                 Admin saved = adminRepository.save(findAdmin);
                 return saved;
             } else {
-                throw new RuntimeException("not found exception");
+                throw new ResourceNotFoundException("Admin with ID " + id + "not found");
             }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);

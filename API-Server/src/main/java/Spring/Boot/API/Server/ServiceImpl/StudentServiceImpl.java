@@ -1,5 +1,6 @@
 package Spring.Boot.API.Server.ServiceImpl;
 
+import Spring.Boot.API.Server.CustomException.ResourceNotFoundException;
 import Spring.Boot.API.Server.Entity.Student;
 import Spring.Boot.API.Server.Repository.StudentRepository;
 import Spring.Boot.API.Server.Service.StudentService;
@@ -33,7 +34,12 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public void deleteStudent(Long id) throws Exception {
         try {
-            studentRepository.deleteById(id);
+            Optional<Student> byId = studentRepository.findById(id);
+            if (!byId.isEmpty()) {
+                studentRepository.deleteById(id);
+            } else {
+                throw new ResourceNotFoundException("Student with ID " + id + "not found");
+            }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
         }
@@ -59,7 +65,11 @@ public class StudentServiceImpl implements StudentService {
     public Optional<Student> getStudentById(Long id) throws Exception {
         try {
             Optional<Student> findById = studentRepository.findById(id);
-            return findById;
+            if (!findById.isEmpty()) {
+                return findById;
+            } else {
+                throw new ResourceNotFoundException("Student with ID " + id + "not found");
+            }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
         }
@@ -75,7 +85,7 @@ public class StudentServiceImpl implements StudentService {
                 Student saved = studentRepository.save(findStudent);
                 return saved;
             } else {
-                throw new RuntimeException("not found exception");
+                throw new ResourceNotFoundException("Student with ID " + id + "not found");
             }
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
