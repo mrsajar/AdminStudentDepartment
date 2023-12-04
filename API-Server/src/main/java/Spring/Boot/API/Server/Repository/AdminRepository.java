@@ -12,7 +12,7 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     public Admin getById(Long id);
 
-    public List<Admin> findByNameContainingIgnoreCaseOrderById(String name, Sort sort);
+    public List<Admin> findByNameContainingIgnoreCaseOrderById(String name);
 
 
 }

@@ -5,7 +5,6 @@ import Spring.Boot.API.Server.Entity.Admin;
 import Spring.Boot.API.Server.Repository.AdminRepository;
 import Spring.Boot.API.Server.Service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.swing.*;
@@ -45,19 +44,62 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    @Override
     public List<Admin> getAllAdmin(String searchName, SortOrder sortOrder) throws Exception {
         try {
-            Sort.Direction direction = (SortOrder.ASCENDING == sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
-            List<Admin> sortSearch = adminRepository.findByNameContainingIgnoreCaseOrderById(searchName, Sort.by(direction, "id"));
-            if (sortSearch != null) {
-                return sortSearch;
+            List<Admin> admins;
+
+            if (searchName != null && !searchName.isEmpty()) {
+                admins = adminRepository.findByNameContainingIgnoreCaseOrderById(searchName);
             } else {
-                List<Admin> all = adminRepository.findAll();
-                return all;
+                admins = adminRepository.findAll();
             }
+
+            // Apply quicksort based on the sortOrder
+            quicksort(admins, 0, admins.size() - 1, sortOrder);
+
+            return admins;
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
+        }
+    }
+
+    private void quicksort(List<Admin> admins, int low, int high, SortOrder sortOrder) {
+        if (low < high) {
+            int partitionIndex = partition(admins, low, high, sortOrder);
+
+            quicksort(admins, low, partitionIndex - 1, sortOrder);
+            quicksort(admins, partitionIndex + 1, high, sortOrder);
+        }
+    }
+
+    private int partition(List<Admin> admins, int low, int high, SortOrder sortOrder) {
+        Admin pivot = admins.get(high);
+
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            if (compareAdmins(admins.get(j), pivot, sortOrder) <= 0) {
+                i++;
+                // Swap admins[i] and admins[j]
+                Admin temp = admins.get(i);
+                admins.set(i, admins.get(j));
+                admins.set(j, temp);
+            }
+        }
+
+        // Swap admins[i + 1] and admins[high] (put the pivot element in its correct place)
+        Admin temp = admins.get(i + 1);
+        admins.set(i + 1, admins.get(high));
+        admins.set(high, temp);
+
+        return i + 1;
+    }
+
+    private int compareAdmins(Admin admin1, Admin admin2, SortOrder sortOrder) {
+        if (SortOrder.ASCENDING == sortOrder) {
+            return admin1.getId().compareTo(admin2.getId());
+        } else {
+            return admin2.getId().compareTo(admin1.getId());
         }
     }
 

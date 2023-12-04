@@ -12,5 +12,5 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     public Student getById(Long id);
 
-    public List<Student> findByNameContainingIgnoreCaseOrderById(String name, Sort sort);
+    public List<Student> findByNameContainingIgnoreCaseOrderById(String name);
 }

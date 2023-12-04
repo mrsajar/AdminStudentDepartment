@@ -5,7 +5,6 @@ import Spring.Boot.API.Server.Entity.Department;
 import Spring.Boot.API.Server.Repository.DepartmentRepository;
 import Spring.Boot.API.Server.Service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.swing.*;
@@ -49,16 +48,60 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public List<Department> getAllDepartment(String searchName, SortOrder sortOrder) throws Exception {
         try {
-            Sort.Direction direction = (SortOrder.ASCENDING == sortOrder) ? Sort.Direction.ASC : Sort.Direction.DESC;
-            List<Department> sortSearch = departmentRepository.findByNameContainingIgnoreCaseOrderById(searchName, Sort.by(direction, "id"));
-            if (sortSearch != null) {
-                return sortSearch;
+            List<Department> departments;
+
+            if (searchName != null && !searchName.isEmpty()) {
+                departments = departmentRepository.findByNameContainingIgnoreCaseOrderById(searchName);
             } else {
-                List<Department> all = departmentRepository.findAll();
-                return all;
+                departments = departmentRepository.findAll();
             }
+
+            // Apply quicksort based on the sortOrder
+            quicksort(departments, 0, departments.size() - 1, sortOrder);
+
+            return departments;
         } catch (Exception e) {
             throw new Exception("Exception is " + e);
+        }
+    }
+
+    private void quicksort(List<Department> departments, int low, int high, SortOrder sortOrder) {
+        if (low < high) {
+            int partitionIndex = partition(departments, low, high, sortOrder);
+
+            quicksort(departments, low, partitionIndex - 1, sortOrder);
+            quicksort(departments, partitionIndex + 1, high, sortOrder);
+        }
+    }
+
+    private int partition(List<Department> departments, int low, int high, SortOrder sortOrder) {
+        Department pivot = departments.get(high);
+
+        int i = low - 1;
+
+        for (int j = low; j < high; j++) {
+            if (compareDepartments(departments.get(j), pivot, sortOrder) <= 0) {
+                i++;
+                // Swap departments[i] and departments[j]
+                Department temp = departments.get(i);
+                departments.set(i, departments.get(j));
+                departments.set(j, temp);
+            }
+        }
+
+        // Swap departments[i + 1] and departments[high] (put the pivot element in its correct place)
+        Department temp = departments.get(i + 1);
+        departments.set(i + 1, departments.get(high));
+        departments.set(high, temp);
+
+        return i + 1;
+    }
+
+    private int compareDepartments(Department department1, Department department2, SortOrder sortOrder) {
+        if (SortOrder.ASCENDING == sortOrder) {
+            return department1.getId().compareTo(department2.getId());
+        } else {
+            return department2.getId().compareTo(department1.getId());
         }
     }
 

@@ -12,5 +12,5 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
     public Department getById(Long id);
 
-    public List<Department> findByNameContainingIgnoreCaseOrderById(String name, Sort sort);
+    public List<Department> findByNameContainingIgnoreCaseOrderById(String name);
 }
